@@ -72,7 +72,13 @@ func (rw *responseWriter) Write(b []byte) (int, error) {
 	}
 	size, err := rw.ResponseWriter.Write(b)
 	rw.size += size
+
+	if rw.body == nil {
+		rw.body = &bytes.Buffer{}
+	}
+
 	rw.body.Write(b)
+
 	return size, err
 }
 
