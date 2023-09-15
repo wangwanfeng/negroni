@@ -1,6 +1,7 @@
 package negroni
 
 import (
+	"bytes"
 	"io"
 	"net/http"
 )
@@ -19,7 +20,7 @@ type ResponseWriter interface {
 	// Size returns the size of the response body.
 	Size() int
 	// Body returns the response body.
-	Body() []byte
+	Body() *bytes.Buffer
 	// Before allows for a function to be called before the ResponseWriter has been written to. This is
 	// useful for setting headers or any other operations that must happen before a response has been written.
 	Before(func(ResponseWriter))
@@ -41,7 +42,7 @@ type responseWriter struct {
 	pendingStatus  int
 	status         int
 	size           int
-	body           []byte
+	body           *bytes.Buffer
 	beforeFuncs    []beforeFunc
 	callingBefores bool
 }
@@ -71,7 +72,7 @@ func (rw *responseWriter) Write(b []byte) (int, error) {
 	}
 	size, err := rw.ResponseWriter.Write(b)
 	rw.size += size
-	rw.body = b
+	rw.body.Write(b)
 	return size, err
 }
 
@@ -105,7 +106,7 @@ func (rw *responseWriter) Size() int {
 	return rw.size
 }
 
-func (rw *responseWriter) Body() []byte {
+func (rw *responseWriter) Body() *bytes.Buffer {
 	return rw.body
 }
 
